@@ -3,6 +3,7 @@ import { StyleSheet, FlatList, View, Text } from "react-native";
 import MapView from "react-native-maps";
 import Swipeout from "react-native-swipeout";
 import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
+import DEV_API from "../config";
 
 class ListItem extends React.Component {
   constructor(props) {
@@ -28,19 +29,32 @@ class ListItem extends React.Component {
   }
 }
 
-const GooglePlaceSearchBar = () => (
+const GooglePlaceSearchBar = props => (
   <GooglePlacesAutocomplete
     placeholder="Enter Location"
     minLength={2}
     autoFocus={false}
+    listViewDisplayed="auto"
     returnKeyType={"default"}
     fetchDetails={true}
+    renderDescription={row => row.description}
+    onPress={(data, details = null) => {
+      props.onPress(details);
+    }}
+    query={{
+      key: DEV_API,
+      language: "en",
+      components: "country:nz"
+    }}
+    currentLocation={true}
+    currentLocationLabel="Current location"
+    debounce={200}
     styles={{
       textInputContainer: styles.textInputContainer,
       textInput: styles.textInput,
-      predefinedPlacesDescription: styles.predefinedPlacesDescription
+      predefinedPlacesDescription: styles.predefinedPlacesDescription,
+      listView: styles.listView
     }}
-    currentLocation={false}
   />
 );
 
@@ -48,6 +62,7 @@ export default class ProductMapScreen extends React.Component {
   constructor(props) {
     super(props);
     this._deleteItem = this._deleteItem.bind(this);
+    this._selectLocation = this._selectLocation.bind(this);
     this.state = {
       region: {
         latitude: -36.8800718,
@@ -55,18 +70,7 @@ export default class ProductMapScreen extends React.Component {
         latitudeDelta: 0.0122,
         longitudeDelta: 0.0221
       },
-      locations: [
-        {
-          id: 1,
-          formatted_address: "10 Park Rd",
-          latlng: { latitude: -36.93420141970849, longitude: 174.6643594802915 }
-        },
-        {
-          id: 2,
-          formatted_address: "154 Queen St",
-          latlng: { latitude: -36.8464272197085, longitude: 174.7673765802915 }
-        }
-      ]
+      locations: []
     };
   }
 
@@ -80,18 +84,40 @@ export default class ProductMapScreen extends React.Component {
     });
   }
 
+  _selectLocation(details) {
+    this.setState(prevState => {
+      const length = prevState.locations.length;
+      const newId = length > 0 ? prevState.locations[length - 1].id + 1 : 0;
+      const formatted_address = details.formatted_address;
+      const latlng = {
+        latitude: details.geometry.location.lat,
+        longitude: details.geometry.location.lng
+      };
+      return {
+        locations: [
+          ...prevState.locations,
+          { id: newId, formatted_address, latlng }
+        ]
+      };
+    });
+  }
+
   render() {
     return (
       <View style={styles.wrapper}>
         <MapView style={styles.map} region={this.state.region} />
-        <GooglePlaceSearchBar />
-        <FlatList
-          style={styles.list}
-          data={this.state.locations}
-          renderItem={({ item }) => {
-            return <ListItem location={item} _deleteItem={this._deleteItem} />;
-          }}
-        />
+        <GooglePlaceSearchBar onPress={this._selectLocation} />
+        {this.state.locations.length > 0 && (
+          <FlatList
+            style={styles.list}
+            data={this.state.locations}
+            renderItem={({ item }) => {
+              return (
+                <ListItem location={item} _deleteItem={this._deleteItem} />
+              );
+            }}
+          />
+        )}
       </View>
     );
   }
@@ -101,7 +127,6 @@ const styles = StyleSheet.create({
   wrapper: { position: "relative", flex: 1, flexDirection: "column" },
   map: {
     ...StyleSheet.absoluteFillObject,
-    height: "50%",
     flex: 1
   },
   list: {
@@ -109,7 +134,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     position: "absolute",
     height: "50%",
-    width: "100%"
+    width: "100%",
+    backgroundColor: "white"
   },
   listItem: {
     paddingHorizontal: 15,
@@ -137,5 +163,11 @@ const styles = StyleSheet.create({
   },
   predefinedPlacesDescription: {
     color: "#1faadb"
+  },
+  listView: {
+    top: 39,
+    position: "absolute",
+    backgroundColor: "white",
+    zIndex: 5
   }
 });
