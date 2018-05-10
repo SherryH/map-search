@@ -10,8 +10,8 @@ export default class MapScreen extends React.Component {
     this._getLocationAsync = this._getLocationAsync.bind(this);
     this.state = {
       region: {
-        latitude: 0,
-        longitude: 0,
+        latitude: -36.8800718,
+        longitude: 174.77537,
         latitudeDelta: 0.0122,
         longitudeDelta: 0.0221
       },
@@ -59,8 +59,8 @@ export default class MapScreen extends React.Component {
       description: "Orion Health"
     };
     this.setState({
-      location,
-      marker: newMarker
+      location
+      // marker: newMarker
     });
   }
   onRegionChangeComplete(region) {

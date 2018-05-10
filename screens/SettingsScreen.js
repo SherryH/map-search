@@ -122,7 +122,7 @@ export default class SettingsScreen extends React.Component {
 
 const styles = StyleSheet.create({
   listWrapper: {
-    backgroundColor: "aqua",
+    backgroundColor: "white",
     paddingHorizontal: 15,
     paddingVertical: 15,
     flexDirection: "row",
