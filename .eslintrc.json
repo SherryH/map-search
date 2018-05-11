@@ -5,6 +5,6 @@
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
     "no-underscore-dangle": [0],
     "comma-dangle": [1, "never"],
-    "background={Touchable.Ripple('blue')}": [0]
+    "import/no-extraneous-dependencies": [0]
   }
 }
